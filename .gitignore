@@ -1,0 +1,8 @@
+.cache/
+.cpcache/
+target/
+out/
+.DS_Store
+.clj-kondo/.cache/
+*.class
+*.jar
