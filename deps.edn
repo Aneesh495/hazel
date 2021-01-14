@@ -1,0 +1,6 @@
+{:paths ["src" "resources"]
+ :deps {org.clojure/clojure {:mvn/version "1.12.6"}}
+ :aliases {:test {:extra-paths ["test" "dev"]
+                  :main-opts ["-m" "hazel.test-runner"]}
+           :run {:main-opts ["-m" "hazel.cli"]}
+           :dev {:extra-paths ["dev" "test"]}}}

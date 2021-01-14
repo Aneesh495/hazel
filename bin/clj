@@ -1,0 +1,33 @@
+#!/bin/sh
+# Small pinned launcher for machines without Clojure CLI. No global installation.
+set -eu
+root=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
+cache="$root/.cache/runtime"
+mkdir -p "$cache"
+hash_file() {
+  if command -v sha256sum >/dev/null 2>&1; then
+    sha256sum "$1" | cut -d ' ' -f 1
+  else
+    shasum -a 256 "$1" | cut -d ' ' -f 1
+  fi
+}
+fetch() {
+  artifact=$1 version=$2 expected=$3
+  file="$cache/$artifact-$version.jar"
+  if [ ! -f "$file" ]; then
+    temp=$(mktemp "$cache/download.XXXXXX")
+    trap 'rm -f "$temp"' EXIT HUP INT TERM
+    curl --fail --location --silent --show-error --retry 3 \
+      "https://repo.maven.apache.org/maven2/org/clojure/$artifact/$version/$artifact-$version.jar" \
+      -o "$temp"
+    [ "$(hash_file "$temp")" = "$expected" ] || { echo "Download checksum mismatch: $artifact" >&2; exit 1; }
+    mv "$temp" "$file"
+    trap - EXIT HUP INT TERM
+  fi
+  [ "$(hash_file "$file")" = "$expected" ] || { echo "Cached runtime checksum mismatch: $file" >&2; exit 1; }
+}
+fetch clojure 1.12.6 21b578db389a8e74b286ce79c4a7f86ec641e26d88b12f18d69030916b0e18ca
+fetch spec.alpha 0.5.238 94cd99b6ea639641f37af4860a643b6ed399ee5a8be5d717cff0b663c8d75077
+fetch core.specs.alpha 0.4.74 eb73ac08cf49ba840c88ba67beef11336ca554333d9408808d78946e0feb9ddb
+cd "$root"
+exec java -Dfile.encoding=UTF-8 -cp "$cache/*:$root/src:$root/resources:$root/test:$root/dev" clojure.main "$@"
