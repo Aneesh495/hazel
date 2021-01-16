@@ -1,5 +1,6 @@
 (ns hazel.test-runner
   "Discovers every test namespace from source declarations. Fails on empty runs."
+  (:refer-clojure :exclude [run!])
   (:require [clojure.java.io :as io]
             [clojure.test :as t]))
 
