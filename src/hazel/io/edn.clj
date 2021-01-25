@@ -1,6 +1,8 @@
 (ns hazel.io.edn
   "Inert, single-value EDN and stable hashes. Never uses the Clojure code reader."
+  (:refer-clojure :exclude [read-string])
   (:require [clojure.edn :as edn]
+            [clojure.string]
             [clojure.java.io :as io]
             [hazel.math.numeric :as n])
   (:import [java.nio.charset StandardCharsets]
