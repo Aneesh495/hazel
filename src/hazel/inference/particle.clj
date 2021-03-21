@@ -2,6 +2,7 @@
   "Bootstrap particle filtering with adaptive systematic resampling.
   Each propagation draws new particle-indexed streams after resampling, preventing
   cloned ancestors from sharing identical future random numbers."
+  (:refer-clojure :exclude [filter])
   (:require [hazel.inference.observation :as observation]
             [hazel.simulation.direct :as direct]
             [hazel.simulation.random :as random]
