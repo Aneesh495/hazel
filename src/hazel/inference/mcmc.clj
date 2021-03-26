@@ -30,8 +30,10 @@
         _ (doseq [p parameters] (when-not (contains? priors p) (n/fail "Missing prior" {:parameter p})))
         evaluate (fn [z particle-seed]
                    (let [values (mapv #(Math/exp %) z)
-                         prior (if (every? n/finite? values)
-                                 (n/sum (map #(log-prior %1 (get priors %2)) values parameters)) ##-Inf)]
+                         terms (when (every? n/finite? values)
+                                 (mapv #(log-prior %1 (get priors %2)) values parameters))
+                         prior (if (or (nil? terms) (some #{##-Inf} terms))
+                                 ##-Inf (n/sum terms))]
                      (if (= prior ##-Inf) {:status :outside-prior :target ##-Inf}
                          (let [candidate (net/with-parameters model (zipmap parameters values))
                                result (particle/filter candidate sensors observations particles particle-seed
