@@ -15,3 +15,11 @@ likelihood-call assertion to verify that the rejected branch stays unreachable.
 
 Reproducer: `outside-prior-does-not-run-likelihood-regression` in
 `test/hazel/mcmc_test.clj`. The failing test was committed before the correction.
+
+## HZ-002: moment derivative argument order
+
+All three initial reward tests failed because a thread-first expression passed a
+vector as the scalar argument to `axpy`. Write the affine combination explicitly
+before adding the second forcing term. Poisson event-count mean and variance,
+constant occupation reward, and state-preserving event counts are retained as
+regressions. Their failing implementation and tests were committed first.

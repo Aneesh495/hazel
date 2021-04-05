@@ -14,8 +14,7 @@
             (let [p (subvec state 0 size) m (subvec state size (* 2 size)) s (subvec state (* 2 size))
                   dp (sparse/generator-product kernel p)
                   dm (n/add (sparse/generator-product kernel m) (first-action p))
-                  ds (-> (sparse/generator-product kernel s)
-                         (n/axpy 2.0 (first-action m))
+                  ds (-> (n/axpy 2.0 (first-action m) (sparse/generator-product kernel s))
                          (n/add (second-action p)))]
               (into (into dp dm) ds)))
         r (ode/integrate f initial time options)
