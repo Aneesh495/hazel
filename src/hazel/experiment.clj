@@ -9,6 +9,8 @@
             [hazel.ctmc.uniformization :as u]
             [hazel.ctmc.sensitivity :as sensitivity]
             [hazel.ctmc.schedule :as schedule]
+            [hazel.ctmc.certificate :as certificate]
+            [hazel.analysis.certificate-check :as certificate-check]
             [hazel.analysis.first-passage :as first-passage]
             [hazel.analysis.stationary :as stationary]
             [hazel.analysis.backward :as backward]
@@ -29,6 +31,7 @@
 (def common-fields #{:kind :projection :solver})
 (def fields
   {:transient #{:time :epsilon :max-refinements :growth}
+   :certify #{:time :target :poisson-order :exponential-order :max-chunks}
    :trajectory #{:times}
    :first-passage #{:times :target}
    :hitting #{:target}
@@ -74,6 +77,10 @@
                                                              (select-keys experiment [:epsilon :max-refinements :growth]) solver))]
                        (-> r (assoc :states (get-in r [:generator :states])) (dissoc :generator :projection)))
           :trajectory {:status :complete :trajectory (u/trajectory q initial times solver)}
+          :certify (let [c (certificate/create model q time experiment)]
+                     {:status :complete :certificate c :verification (certificate-check/check model c)
+                      :event-interval (when (:target experiment)
+                                        (certificate/event-interval c (predicate/compile-predicate model (:target experiment))))})
           :first-passage {:status :complete :first-passage (first-passage/cdf q initial
                                                                                            (predicate/compile-predicate model (:target experiment)) times solver)}
           :hitting (assoc (backward/hitting q (predicate/compile-predicate model (:target experiment))) :status :complete)

@@ -8,6 +8,9 @@
             [hazel.io.report :as report]
             [hazel.model.network :as net]
             [hazel.model.structure :as structure]
+            [hazel.model.predicate :as predicate]
+            [hazel.ctmc.certificate :as certificate]
+            [hazel.analysis.certificate-check :as certificate-check]
             [hazel.experiment :as experiment]
             [hazel.math.numeric :as n]))
 
@@ -16,6 +19,7 @@
        "  hazel check STUDY.edn             Validate model and experiment schema\n"
        "  hazel run STUDY.edn [--out DIR]   Run, save a bundle, and render index.html\n"
        "  hazel replay BUNDLE.edn           Verify content and strictly recompute\n"
+       "  hazel verify BUNDLE.edn           Independently check a rational certificate\n"
        "  hazel inspect BUNDLE.edn          Verify content and show a compact summary\n"
        "  hazel help                       Show this text\n\n"
        "Exit codes: 0 success, 1 invalid input or failed verification, 2 incomplete calculation.\n"))
@@ -68,6 +72,15 @@
                                      :projected-states (count (:states result))}}))
       "replay" (do (when (or (nil? path) (seq options)) (n/fail "replay needs one bundle path" {}))
                    {:exit 0 :data (replay! path)})
+      "verify" (do (when (or (nil? path) (seq options)) (n/fail "verify needs one certificate bundle path" {}))
+                   (let [{:keys [model request result]} (bundle/read! path)
+                         c (:certificate result)]
+                     (when-not (= :certify (:kind request)) (n/fail "Bundle is not a rational certificate study" {}))
+                     (let [checked (certificate-check/check model c)
+                           interval (when (:target request)
+                                      (certificate/event-interval c (predicate/compile-predicate model (:target request))))]
+                       (when-not (= interval (:event-interval result)) (n/fail "Stored event interval differs from certificate" {}))
+                       {:exit 0 :data checked})))
       (n/fail "Unknown command; use hazel help" {:command command}))))
 
 (defn invoke [args]

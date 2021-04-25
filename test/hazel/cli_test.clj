@@ -27,3 +27,14 @@
   (is (= 1 (:exit (cli/invoke ["run"]))))
   (is (= 1 (:exit (cli/invoke ["check" "does-not-exist.edn"]))))
   (is (= "&lt;&gt;&amp;&quot;&#39;" (report/escape "<>&\"'"))))
+
+(deftest certificate-command
+  (temp/with-directory
+    (fn [dir]
+      (let [study (io/file dir "proof.edn")]
+        (spit study (pr-str {:model f/birth-source
+                            :experiment {:kind :certify :time 1/2 :projection {:bounds [8]}
+                                         :target {:species :x :op :>= :value 2}}}))
+        (let [r (cli/invoke ["run" (str study) "--out" (str (io/file dir "out"))])]
+          (is (= 0 (:exit r)))
+          (is (= 0 (:exit (cli/invoke ["verify" (get-in r [:data :bundle])])))))))))
