@@ -1,0 +1,10 @@
+{:title "Estimating a Poisson tail with tilted reaction paths"
+ :description "A rate-8 proposal samples paths for a rate-2 arrival process. Full path likelihood ratios correct the change of measure."
+ :model {:name "Rare arrival event"
+         :species [:x]
+         :initial {:x 0}
+         :parameters {:arrival 2}
+         :reactions [{:id :arrival :reactants {} :products {:x 1} :rate :arrival}]}
+ :experiment {:kind :importance :time 1 :proposal {:arrival 8}
+              :target {:species :x :op :>= :value 10}
+              :samples 4000 :seed 1729}}

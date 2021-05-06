@@ -1,0 +1,12 @@
+{:title "Transcription under a switching promoter"
+ :description "A schematic two-state promoter produces integer RNA populations. Rates are illustrative, not fitted experimental measurements."
+ :model {:name "Telegraph promoter"
+         :species [:off :on :rna]
+         :initial {:off 1 :on 0 :rna 0}
+         :parameters {:activate 1/4 :deactivate 1/2 :transcribe 5 :degrade 1}
+         :reactions [{:id :activate :reactants {:off 1} :products {:on 1} :rate :activate}
+                     {:id :deactivate :reactants {:on 1} :products {:off 1} :rate :deactivate}
+                     {:id :transcribe :reactants {:on 1} :products {:on 1 :rna 1} :rate :transcribe}
+                     {:id :degrade :reactants {:rna 1} :products {} :rate :degrade}]}
+ :experiment {:kind :transient :time 5 :epsilon 1e-9
+              :projection {:bounds [1 1 8] :max-states 5000}}}

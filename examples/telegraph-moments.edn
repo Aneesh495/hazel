@@ -1,0 +1,11 @@
+{:title "A closed moment hierarchy for promoter noise"
+ :description "The generator maps polynomials of degree at most three back into that finite basis, so no moment closure approximation is required."
+ :model {:name "Promoter moments"
+         :species [:off :on :rna]
+         :initial {:off 1 :rna 0}
+         :parameters {:activate 1/4 :deactivate 1/2 :transcribe 5 :degrade 1}
+         :reactions [{:id :activate :reactants {:off 1} :products {:on 1} :rate :activate}
+                     {:id :deactivate :reactants {:on 1} :products {:off 1} :rate :deactivate}
+                     {:id :transcribe :reactants {:on 1} :products {:on 1 :rna 1} :rate :transcribe}
+                     {:id :degrade :reactants {:rna 1} :products {} :rate :degrade}]}
+ :experiment {:kind :moments :order 3 :time 5}}

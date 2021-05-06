@@ -1,0 +1,9 @@
+{:title "Reversible dimerization at equilibrium"
+ :description "A conserved population of 20 monomer units. Combinatorial rates use choose(A,2), with no hidden factor-of-two convention."
+ :model {:name "Reversible dimerization"
+         :species [:monomer :dimer]
+         :initial {:monomer 20}
+         :parameters {:associate 1/20 :dissociate 1}
+         :reactions [{:id :associate :reactants {:monomer 2} :products {:dimer 1} :rate :associate}
+                     {:id :dissociate :reactants {:dimer 1} :products {:monomer 2} :rate :dissociate}]}
+ :experiment {:kind :stationary}}

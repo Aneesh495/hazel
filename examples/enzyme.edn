@@ -1,0 +1,11 @@
+{:title "Waiting for an enzyme to finish its substrate"
+ :description "A finite enzyme-substrate system with two exact conservation laws. The target is complete substrate conversion, not an instantaneous product count approximation."
+ :model {:name "Enzyme turnover"
+         :species [:enzyme :substrate :complex :product]
+         :initial {:enzyme 1 :substrate 6}
+         :parameters {:bind 1/5 :unbind 1/2 :catalyze 1}
+         :reactions [{:id :bind :reactants {:enzyme 1 :substrate 1} :products {:complex 1} :rate :bind}
+                     {:id :unbind :reactants {:complex 1} :products {:enzyme 1 :substrate 1} :rate :unbind}
+                     {:id :catalyze :reactants {:complex 1} :products {:enzyme 1 :product 1} :rate :catalyze}]}
+ :experiment {:kind :first-passage :times [0 2 4 8 12 20 30 50]
+              :target {:species :product :op := :value 6}}}

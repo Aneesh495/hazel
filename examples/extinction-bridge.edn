@@ -1,0 +1,8 @@
+{:title "A population path conditioned on extinction"
+ :description "Uniformization samples the continuous-time population bridge from six molecules to zero in two time units. Virtual events are removed."
+ :model {:name "Conditioned decay"
+         :species [:x]
+         :initial {:x 6}
+         :parameters {:decay 7/10}
+         :reactions [{:id :decay :reactants {:x 1} :products {} :rate :decay}]}
+ :experiment {:kind :bridge :start [6] :end [0] :time 2 :seed 1729}}

@@ -1,0 +1,12 @@
+{:title "A birth pulse followed by washout"
+ :description "Piecewise-constant interventions change rates on a common projection. Escaped mass is carried across boundaries."
+ :model {:name "Pulse and decay"
+         :species [:rna]
+         :initial {:rna 0}
+         :parameters {:birth 2 :death 1/2}
+         :reactions [{:id :birth :reactants {} :products {:rna 1} :rate :birth}
+                     {:id :death :reactants {:rna 1} :products {} :rate :death}]}
+ :experiment {:kind :schedule :projection {:bounds [35]}
+              :segments [{:until 1 :parameters {:birth 1}}
+                         {:until 3 :parameters {:birth 6}}
+                         {:until 8 :parameters {:birth 0}}]}}

@@ -1,0 +1,11 @@
+{:title "A rational probability enclosure"
+ :description "Independently checkable lower and upper bounds for P(X(1)>=3), where X is a Poisson arrival process with rate 2."
+ :model {:name "Rational arrival process"
+         :species [:x]
+         :initial {:x 0}
+         :parameters {:arrival 2}
+         :reactions [{:id :arrival :reactants {} :products {:x 1} :rate :arrival}]}
+ :experiment {:kind :certify :time 1
+              :projection {:bounds [18]}
+              :poisson-order 20 :exponential-order 20
+              :target {:species :x :op :>= :value 3}}}

@@ -1,0 +1,11 @@
+{:title "Recovering an arrival rate from a complete count"
+ :description "The likelihood has its maximum at seven arrivals divided by two time units. This is an analytic optimizer check, not a fitted scientific dataset."
+ :model {:name "Rate estimation"
+         :species [:x]
+         :initial {:x 0}
+         :parameters {:arrival 2}
+         :reactions [{:id :arrival :reactants {} :products {:x 1} :rate :arrival}]}
+ :experiment {:kind :fit :parameters [:arrival] :bounds {:arrival [1/100 8]}
+              :projection {:bounds [35]}
+              :sensors [{:species :x :kind :exact}]
+              :observations [{:time 2 :values {:x 7}}]}}

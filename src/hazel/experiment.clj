@@ -16,6 +16,7 @@
             [hazel.analysis.backward :as backward]
             [hazel.analysis.design :as design]
             [hazel.analysis.reward :as reward]
+            [hazel.analysis.moment :as moment]
             [hazel.inference.observation :as observation]
             [hazel.inference.filter :as filter]
             [hazel.inference.smoother :as smoother]
@@ -23,9 +24,11 @@
             [hazel.inference.fit :as fit]
             [hazel.inference.particle :as particle]
             [hazel.inference.mcmc :as mcmc]
+            [hazel.inference.bridge :as bridge]
             [hazel.simulation.direct :as direct]
             [hazel.simulation.next-reaction :as next-reaction]
             [hazel.simulation.ensemble :as ensemble]
+            [hazel.simulation.importance :as importance]
             [hazel.math.numeric :as n]))
 
 (def common-fields #{:kind :projection :solver})
@@ -45,6 +48,9 @@
    :design #{:parameters :times :species :budget :criterion :regularization}
    :schedule #{:segments}
    :reward #{:reaction :species :time}
+   :moments #{:order :time}
+   :bridge #{:start :end :time :seed :relative-tail :max-virtual-events}
+   :importance #{:proposal :time :target :samples :seed :max-events}
    :simulate #{:time :seed :algorithm :max-events}
    :ensemble #{:time :seed :samples :workers :max-events}})
 
@@ -64,7 +70,7 @@
   (let [{:keys [kind time times seed parameters sensors observations solver]} experiment
         solver (or solver {})
         sensors (when sensors (observation/compile-sensors model sensors))
-        standalone? (contains? #{:transient :simulate :ensemble :particle :mcmc} kind)
+        standalone? (contains? #{:transient :simulate :ensemble :particle :mcmc :moments :importance} kind)
         projection (when-not standalone? (projection/enumerate model (:projection experiment)))
         q (when projection (g/build projection))
         initial (when q (g/initial-vector q (:initial model)))
@@ -100,6 +106,10 @@
                     (assoc (design/greedy (design/snapshot-candidates model q initial parameters times #(nth % index) solver)
                                           (:budget experiment) experiment) :status :complete))
           :schedule (schedule/solve model (:states q) initial (:segments experiment) solver)
+          :moments (moment/solve model (:order experiment) time solver)
+          :bridge (bridge/sample q (:start experiment) (:end experiment) time seed experiment)
+          :importance (importance/estimate model (:proposal experiment) time
+                                           (predicate/compile-predicate model (:target experiment)) (:samples experiment) seed experiment)
           :reward (if-let [reaction (:reaction experiment)]
                     (reward/reaction-count q initial time reaction solver)
                     (let [index (get (:index model) (:species experiment))]

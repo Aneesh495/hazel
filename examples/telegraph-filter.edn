@@ -1,0 +1,18 @@
+{:title "Inferring a hidden promoter from incomplete counts"
+ :description "Illustrative observations with 70 percent RNA detection. Missing values at t=2 carry no measurement evidence."
+ :model {:name "Partially observed promoter"
+         :species [:off :on :rna]
+         :initial {:off 1 :rna 0}
+         :parameters {:activate 1/4 :deactivate 1/2 :transcribe 5 :degrade 1}
+         :reactions [{:id :activate :reactants {:off 1} :products {:on 1} :rate :activate}
+                     {:id :deactivate :reactants {:on 1} :products {:off 1} :rate :deactivate}
+                     {:id :transcribe :reactants {:on 1} :products {:on 1 :rna 1} :rate :transcribe}
+                     {:id :degrade :reactants {:rna 1} :products {} :rate :degrade}]}
+ :experiment {:kind :filter :projection {:bounds [1 1 28]}
+              :sensors [{:species :rna :kind :binomial :probability 7/10}]
+              :observations [{:time 1 :values {:rna 0}}
+                             {:time 2 :values {}}
+                             {:time 3 :values {:rna 4}}
+                             {:time 4 :values {:rna 2}}
+                             {:time 5 :values {:rna 1}}]
+              :smooth? true :bridge-seed 1729}}

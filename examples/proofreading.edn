@@ -1,0 +1,15 @@
+{:title "Kinetic proofreading as a finite Markov cycle"
+ :description "A schematic receptor with one intermediate proofreading state. Independent snapshots at candidate times are scored for information about unbinding and progression."
+ :model {:name "Kinetic proofreading"
+         :species [:free :bound :checked :signal]
+         :initial {:free 1}
+         :parameters {:bind 2 :unbind 1 :check 1/2 :activate 1 :reset 1/4}
+         :reactions [{:id :bind :reactants {:free 1} :products {:bound 1} :rate :bind}
+                     {:id :unbind :reactants {:bound 1} :products {:free 1} :rate :unbind}
+                     {:id :check :reactants {:bound 1} :products {:checked 1} :rate :check}
+                     {:id :reject :reactants {:checked 1} :products {:free 1} :rate :unbind}
+                     {:id :activate :reactants {:checked 1} :products {:signal 1} :rate :activate}
+                     {:id :reset :reactants {:signal 1} :products {:free 1} :rate :reset}]}
+ :experiment {:kind :design :parameters [:unbind :check]
+              :times [1/4 1/2 1 2 4 8 16] :species :signal
+              :budget 3 :criterion :d :regularization 1e-4}}

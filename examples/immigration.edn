@@ -1,0 +1,10 @@
+{:title "Arrivals without a population ceiling"
+ :description "A Poisson reference law and an adaptive projection that must account for every escaped path. Time is in arbitrary units."
+ :model {:name "Immigration"
+         :species [:x]
+         :initial {:x 0}
+         :parameters {:arrival 2}
+         :reactions [{:id :arrival :reactants {} :products {:x 1} :rate :arrival}]}
+ :experiment {:kind :transient :time 4
+              :projection {:bounds [3] :max-states 1000}
+              :epsilon 1e-10 :max-refinements 12}}

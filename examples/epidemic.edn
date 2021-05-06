@@ -1,0 +1,10 @@
+{:title "A finite epidemic and its outbreak threshold"
+ :description "A schematic SIR population of 12. The study computes the probability of ever reaching six simultaneously infected individuals. It is not a forecast."
+ :model {:name "Finite SIR"
+         :species [:susceptible :infected :recovered]
+         :initial {:susceptible 11 :infected 1}
+         :parameters {:infect 1/8 :recover 1/2}
+         :reactions [{:id :infection :reactants {:susceptible 1 :infected 1} :products {:infected 2} :rate :infect}
+                     {:id :recovery :reactants {:infected 1} :products {:recovered 1} :rate :recover}]}
+ :experiment {:kind :first-passage :times [0 1/2 1 2 3 5 8 12]
+              :target {:species :infected :op :>= :value 6}}}
