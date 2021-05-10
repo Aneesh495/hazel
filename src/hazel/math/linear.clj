@@ -22,21 +22,21 @@
 
 (defn add [a b]
   (when-not (= (shape a) (shape b)) (n/fail "Matrix dimension mismatch" {}))
-  (mapv #(mapv + %1 %2) a b))
+  (mapv #(mapv +' %1 %2) a b))
 
-(defn scale [c a] (mapv #(mapv (partial * c) %) a))
+(defn scale [c a] (mapv #(mapv (partial *' c) %) a))
 
 (defn multiply [a b]
   (matrix! a) (matrix! b)
   (let [[ar ac] (shape a) [br bc] (shape b) bt (transpose b)]
     (when-not (= ac br) (n/fail "Matrix multiplication dimension mismatch" {}))
     (mapv (fn [i]
-            (mapv (fn [j] (reduce + 0 (map * (a i) (bt j)))) (range bc)))
+            (mapv (fn [j] (reduce +' 0N (map *' (a i) (bt j)))) (range bc)))
           (range ar))))
 
 (defn matvec [a x]
   (matrix! a)
-  (mapv (fn [row] (n/same-size! row x) (reduce + 0 (map * row x))) a))
+  (mapv (fn [row] (n/same-size! row x) (reduce +' 0N (map *' row x))) a))
 
 (defn rowvec [x a] (matvec (transpose a) x))
 
@@ -61,7 +61,7 @@
                    a (mapv (fn [i]
                              (if (= i row) normalized
                                  (let [f (get-in a [i col])]
-                                   (mapv #(- %1 (* f %2)) (a i) normalized))))
+                                   (mapv #(-' %1 (*' f %2)) (a i) normalized))))
                            (range rows))]
                (recur a (inc row) (inc col) (conj pivots col))))))))))
 
@@ -95,6 +95,18 @@
   (let [size (count a)]
     (transpose (mapv #(solve a %) (identity size)))))
 
+(defn solve-scaled
+  "Scale each coefficient row before numeric pivot tests. Rate-unit changes must
+  not turn a nonsingular Markov backward equation into a singular system."
+  ([a b] (solve-scaled a b 1e-13))
+  ([a b tolerance]
+   (matrix! a) (n/positive! :pivot-tolerance tolerance)
+   (n/same-size! a b)
+   (let [scales (mapv #(reduce max 0.0 (map (comp abs double) %)) a)]
+     (when (some zero? scales) (n/fail "Singular system contains a zero coefficient row" {}))
+     (solve (mapv (fn [row scale] (mapv #(/ (double %) scale) row)) a scales)
+            (mapv #(/ (double %1) %2) b scales) tolerance))))
+
 (defn determinant [a]
   (matrix! a)
   (let [[rows cols] (shape a)]
@@ -107,13 +119,13 @@
                 (let [a (assoc a k (a p) p (a k))
                       a (reduce (fn [a i]
                                   (let [factor (/ (get-in a [i k]) value)]
-                                    (assoc a i (mapv #(- %1 (* factor %2)) (a i) (a k)))))
+                                    (assoc a i (mapv #(-' %1 (*' factor %2)) (a i) (a k)))))
                                 a (range (inc k) rows))]
-                  (recur a (inc k) (* product value (if (= p k) 1 -1))))))))))
+                  (recur a (inc k) (*' product value (if (= p k) 1 -1))))))))))
 
 (defn norm-one [a]
   (if (empty? a) 0.0 (apply max 0.0 (map #(n/sum (map abs %)) (transpose a)))))
 
 (defn quadratic [x a] (n/dot x (matvec a x)))
 
-(defn outer [a b] (mapv (fn [x] (mapv #(* x %) b)) a))
+(defn outer [a b] (mapv (fn [x] (mapv #(*' x %) b)) a))

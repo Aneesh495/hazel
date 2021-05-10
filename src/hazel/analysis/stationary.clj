@@ -29,7 +29,7 @@
                 (let [a (mapv (fn [j] (mapv #(double (g/rate q % j)) indexes)) indexes)
                       a (assoc a (dec size) (vec (repeat size 1.0)))
                       b (assoc (vec (repeat size 0.0)) (dec size) 1.0)
-                      pi (mapv n/clamp-probability (l/solve a b 1e-13))
+                      pi (mapv n/clamp-probability (l/solve-scaled a b))
                       full (reduce (fn [v [i x]] (assoc v i x))
                                    (vec (repeat (:size q) 0.0)) (map vector indexes pi))]
                   {:states indexes :probabilities full

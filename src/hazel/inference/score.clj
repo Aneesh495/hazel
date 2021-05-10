@@ -8,6 +8,10 @@
 (defn forward
   [model q initial parameters sensors observations options]
   (observation/validate-observations sensors observations)
+  (n/probability-vector! initial)
+  (n/same-size! (:rows q) initial)
+  (when-not (= (:hash model) (:model-hash q)) (n/fail "Score generator/model mismatch" {}))
+  (when (pos? (get initial (:sink q))) (n/fail "Score initial mass cannot be escaped" {}))
   (loop [measurements observations time 0.0 p initial
          tangents (zipmap parameters (repeat (vec (repeat (:size q) 0.0))))
          score (zipmap parameters (repeat 0.0)) log-likelihood 0.0 steps []]

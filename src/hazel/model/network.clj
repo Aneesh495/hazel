@@ -39,6 +39,8 @@
       (when-not (keyword? (:id reaction)) (n/fail "Reaction id must be a keyword" {}))
       (doseq [side [:reactants :products]]
         (counts! (get reaction side) (set species) [(:id reaction) side]))
+      (when (> (reduce +' 0N (vals (:reactants reaction))) 32)
+        (n/fail "Total reaction order exceeds 32" {:reaction (:id reaction)}))
       (let [rate (:rate reaction)]
         (if (keyword? rate)
           (when-not (contains? parameters rate)

@@ -77,4 +77,5 @@
            (let [t (first times) result (propagate q p (- t previous) options)
                  tail (+ tail (:series-tail-bound result))]
              (recur (rest times) t (:probabilities result) tail
-                    (conj results (assoc result :time t :series-tail-bound tail)))))))))
+                    (conj results (assoc result :time t :series-tail-bound tail
+                                        :truncation-bound (min 1.0 (+ (:escape-probability result) tail)))))))))))

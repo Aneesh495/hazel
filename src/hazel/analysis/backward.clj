@@ -23,11 +23,11 @@
          unknown (vec (sort (remove targets can-hit)))
          a (mapv (fn [i] (mapv #(- (double (g/rate q i %))) unknown)) unknown)
          b (mapv (fn [i] (n/sum (map #(g/rate q i %) targets))) unknown)
-         solution (if (empty? unknown) [] (l/solve a b 1e-13))
+         solution (if (empty? unknown) [] (l/solve-scaled a b))
          h (reduce (fn [h [i p]] (assoc h i (n/clamp-probability p)))
                    (reduce #(assoc %1 %2 1.0) (vec (repeat (:size q) 0.0)) targets)
                    (map vector unknown solution))
-         weighted-times (if (empty? unknown) [] (l/solve a (mapv h unknown) 1e-13))
+         weighted-times (if (empty? unknown) [] (l/solve-scaled a (mapv h unknown)))
          conditional (reduce (fn [t [i value]]
                                (assoc t i (when (pos? (h i)) (/ value (h i)))))
                              (reduce #(assoc %1 %2 0.0) (vec (repeat (:size q) nil)) targets)

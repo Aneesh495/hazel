@@ -23,3 +23,39 @@ vector as the scalar argument to `axpy`. Write the affine combination explicitly
 before adding the second forcing term. Poisson event-count mean and variance,
 constant occupation reward, and state-preserving event counts are retained as
 regressions. Their failing implementation and tests were committed first.
+
+## HZ-003: exact algebra overflowed machine integers
+
+`large-exact-algebra-regression` produced three arithmetic exceptions at 10^20.
+Matrix products, matrix-vector products, and determinant elimination used checked
+machine arithmetic before any operand became a bigint. Use promoting arithmetic
+throughout the exact algebra path. Numeric algorithms still use binary64.
+
+## HZ-004: absolute pivot thresholds depended on rate units
+
+Rescaling a two-state chain to rates of 10^-18 incorrectly produced a singular
+backward system. Scale each coefficient row before numeric pivot tests. The
+regression verifies both the 10^18 mean waiting time and the unchanged stationary
+law. It does not claim that every ill-conditioned system is accurately solvable.
+
+## HZ-005: cumulative trajectory tail metadata was inconsistent
+
+The trajectory stored a cumulative series tail alongside the latest segment's
+truncation bound. Three assertions failed in the four-interval regression. Rebuild
+the combined truncation bound using cumulative series tail and current escape.
+
+## HZ-006: a tiny rate difference was accepted as strong lumpability
+
+An absolute tolerance of 10^-12 merged states whose rates differed by a factor
+of two at a 10^-20 scale. Strong lumpability now defaults to exact signature
+comparison. An explicitly supplied tolerance remains an approximate diagnostic.
+
+## HZ-007: incomplete validation on alternate entry points
+
+The edge-contract tests reproduced acceptance of a mismatched sensitivity model,
+a malformed replay censor time, invalid initial probability in an empty score
+run, and an unboundedly high reaction order. Validate those entry paths before
+returning early. Total reactant order is capped at 32 to bound combinatorial work.
+
+HZ-003 through HZ-007 are reproduced in `test/hazel/edge_contract_test.clj`,
+committed together while failing, before these corrections.

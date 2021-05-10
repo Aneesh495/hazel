@@ -34,6 +34,8 @@
   ([model q initial parameters time {:keys [tolerance initial-sensitivities max-chunks]
                                     :or {tolerance 1e-13 max-chunks 100000}}]
    (n/nonnegative! :time time) (n/tolerance! tolerance)
+   (when-not (= (:model-hash q) (:hash model))
+     (n/fail "Sensitivity generator/model hash mismatch" {}))
    (let [initial (n/probability-vector! initial true)
          _ (n/same-size! (:rows q) initial)
          _ (when-not (= (count parameters) (count (set parameters)))

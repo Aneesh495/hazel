@@ -24,18 +24,23 @@
     (update rates (block-of index) - (get (:exits q) index))))
 
 (defn check
-  ([q blocks] (check q blocks 1e-12))
+  ([q blocks] (check q blocks 0.0))
   ([q blocks tolerance]
    (let [blocks (partition! q blocks)
          block-of (into {} (mapcat (fn [b indexes] (map #(vector % b) indexes)) (range) blocks))
          differences (for [indexes blocks i (rest indexes)
                            :let [reference (signature q (first indexes) block-of (count blocks))
                                  actual (signature q i block-of (count blocks))
-                                 residual (n/distance reference actual)]]
-                       {:reference (first indexes) :state i :residual residual :expected reference :actual actual})
+                                 residual (n/distance reference actual)
+                                 equal? (every? true? (map (fn [a b]
+                                                           (if (and (or (integer? a) (ratio? a))
+                                                                    (or (integer? b) (ratio? b))) (= a b) (== a b))) reference actual))]]
+                       {:reference (first indexes) :state i :residual residual :equal? equal? :expected reference :actual actual})
          worst (reduce (fn [a b] (if (> (:residual b) (:residual a)) b a)) {:residual 0.0} differences)]
-     {:lumpable? (<= (:residual worst) tolerance) :maximum-residual (:residual worst)
-      :counterexample (when (> (:residual worst) tolerance) worst) :blocks blocks})))
+     (let [bad (if (zero? tolerance) (first (remove :equal? differences))
+                   (first (filter #(> (:residual %) tolerance) differences)))]
+       {:lumpable? (nil? bad) :maximum-residual (:residual worst)
+        :counterexample bad :blocks blocks}))))
 
 (defn refine
   "Split exact rate signatures until a fixed point. No numeric rounding in keys."

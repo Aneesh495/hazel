@@ -38,6 +38,13 @@
   (when-not (= (:hash model) (:model-hash trace))
     (n/fail "Replay model hash mismatch" {}))
   (when-not (:recorded? trace) (n/fail "Trace did not record events" {}))
+  (n/nonnegative! :horizon (:horizon trace))
+  (n/nonnegative! :final-time (:final-time trace))
+  (n/natural! :event-count (:event-count trace))
+  (when-not (and (#{:complete :event-budget-exhausted} (:status trace))
+                 (<= (:final-time trace) (:horizon trace))
+                 (or (not= :complete (:status trace)) (== (:final-time trace) (:horizon trace))))
+    (n/fail "Replay censor metadata is inconsistent" {}))
   (let [initial (net/state! model (:initial-state trace))]
     (loop [state initial time 0.0 events (:events trace) count 0]
       (if (empty? events)
@@ -46,7 +53,7 @@
             (n/fail "Replay final state or event count mismatch" {}))
           {:status :valid :final-state state :event-count count})
         (let [event (first events) t (n/nonnegative! :event-time (:time event))]
-          (when-not (< time t (+ (:horizon trace) 1e-14))
+          (when-not (and (< time t) (<= t (:final-time trace)))
             (n/fail "Replay event times are inconsistent" {:time t}))
           (let [next-state (k/fire model state (:reaction event))]
             (when-not (= next-state (:state event))
