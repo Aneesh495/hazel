@@ -59,3 +59,22 @@ returning early. Total reactant order is capped at 32 to bound combinatorial wor
 
 HZ-003 through HZ-007 are reproduced in `test/hazel/edge_contract_test.clj`,
 committed together while failing, before these corrections.
+
+## HZ-008: equal source/class timestamps triggered runtime recompilation
+
+The executable JAR displayed help but failed while rendering a real report.
+Normalizing every entry to the same timestamp caused Clojure to select source
+instead of precompiled namespace initializers. A protocol interface was then
+loaded in two class loaders, producing a `PrettyFlush` cast failure. Give class
+entries a fixed timestamp two seconds newer than source entries. Keep source in
+the JAR for inspection. The package regression runs a real certificate study,
+independent verification, and strict replay from outside the checkout.
+
+## HZ-009: a generated closure changed between fresh package builds
+
+The two-build package regression found functionally equivalent class files with
+different closure-capture ordering. AOT compilation of all application code was
+not byte-reproducible between fresh JVMs. Compile only a minimal Clojure bootstrap
+and bundle application namespaces as source, which uses the normal runtime JIT
+path. The regression compares fresh build hashes on the same runtime. This does
+not promise identical artifacts across different Clojure or JDK releases.

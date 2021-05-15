@@ -19,9 +19,9 @@
         _ (when (.exists classes) (doseq [file (reverse (file-seq classes))] (io/delete-file file)))
         _ (.mkdirs classes)
         source-before (source/fingerprint)]
-    (binding [*compile-path* (.getPath classes)] (compile 'hazel.cli))
+    (binding [*compile-path* (.getPath classes)] (compile 'hazel.main))
     (let [destination (io/file "target/hazel.jar")
-          manifest-text (str "Manifest-Version: 1.0\r\nMain-Class: hazel.cli\r\n"
+          manifest-text (str "Manifest-Version: 1.0\r\nMain-Class: hazel.Main\r\n"
                              "Implementation-Title: Hazel\r\nImplementation-Version: 0.1.0\r\n\r\n")
           seen (atom #{})
           runtime (->> (str/split (System/getProperty "java.class.path")
@@ -31,7 +31,10 @@
         (letfn [(entry! [name stream]
                   (when-not (contains? @seen name)
                     (swap! seen conj name)
-                    (let [entry (doto (JarEntry. name) (.setTime 0))]
+                    ;; Clojure selects source when its timestamp is not older
+                    ;; than __init.class. Preserve that ordering deterministically.
+                    (let [timestamp (+ 315532800000 (if (str/ends-with? name ".class") 2000 0))
+                          entry (doto (JarEntry. name) (.setTime timestamp))]
                       (.putNextEntry out entry)
                       (io/copy stream out)
                       (.closeEntry out))))]

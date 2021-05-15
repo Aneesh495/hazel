@@ -88,10 +88,14 @@
        (catch Exception e {:exit 1 :error (.getMessage e)
                            :details (dissoc (ex-data e) :hazel/error)})))
 
+(defn- emit-error! [diagnostic]
+  ;; Keep diagnostics on stderr so stdout remains one machine-readable value.
+  (binding [*out* *err*] (println (pr-str diagnostic))))
+
 (defn -main [& args]
   (let [{:keys [exit text data error details]} (invoke args)]
     (if error
-      (binding [*out* *err*] (println (pr-str {:error error :details details})))
+      (emit-error! {:error error :details details})
       (if text (print text) (println (pr-str data))))
     (flush)
     (shutdown-agents)

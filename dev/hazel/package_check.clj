@@ -1,6 +1,7 @@
 (ns hazel.package-check
   "Permanent executable-package regression. Child JVMs start outside the checkout
   so missing resources and source-only success cannot hide packaging defects."
+  (:refer-clojure :exclude [run!])
   (:require [clojure.java.io :as io]
             [clojure.string :as str]
             [hazel.io.edn :as edn]
