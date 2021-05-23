@@ -1,0 +1,50 @@
+name: verify
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: verify-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  acceptance:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        java: ['17', '21', '25']
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Set up Java
+        uses: actions/setup-java@b843ebf9b913146b38da2eaa7aeddf76074ae1ad # v6.1.0
+        with:
+          distribution: temurin
+          java-version: ${{ matrix.java }}
+      - name: Full acceptance on Unix
+        if: runner.os != 'Windows'
+        run: make acceptance verify
+      - name: Full acceptance on Windows
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          & ./bin/clj.ps1 -m hazel.acceptance run
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          & ./bin/clj.ps1 -m hazel.acceptance verify
+          exit $LASTEXITCODE
+      - name: Preserve raw evidence
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: hazel-${{ matrix.os }}-java-${{ matrix.java }}
+          path: out/acceptance
+          if-no-files-found: warn
+          retention-days: 14
