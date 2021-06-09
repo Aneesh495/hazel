@@ -29,7 +29,7 @@
         count (max 1 (count entries)) width (/ 450.0 count)
         stride (max 1 (long (Math/ceil (/ count 12.0))))]
     (svg title
-         (str "<path class=\"axis\" d=\"M45 20V220H505\"/>"
+         (str "<path class=\"axis\" fill=\"none\" d=\"M45 20V220H505\"/>"
               (label 6 25 (format-number maximum)) (label 25 222 "0")
               (apply str (map-indexed
                           (fn [i [x probability]]
@@ -44,7 +44,7 @@
         xmax (reduce max 1e-9 (map first points)) ymax (reduce max 1e-9 (map second points))
         x #(+ 45 (* 450 (/ % xmax))) y #(- 220 (* 190 (/ % ymax)))]
     (svg title
-         (str "<path class=\"axis\" d=\"M45 20V220H505\"/>"
+         (str "<path class=\"axis\" fill=\"none\" d=\"M45 20V220H505\"/>"
               (label 6 25 (format-number ymax)) (label 25 222 "0")
               (label 45 244 "0") (label 455 244 (format-number xmax))
               (apply str (map-indexed
@@ -88,11 +88,12 @@
         history (:history result) species (:species model)
         trajectory (:trajectory result)
         steps (when (vector? (:steps result)) (:steps result))
-        final-probabilities (or probabilities (:probabilities (peek trajectory)))
+        certificate (:certificate result)
+        final-probabilities (or probabilities (:lower-probabilities certificate) (:probabilities (peek trajectory)))
         charts (when (and (seq states) final-probabilities)
                  (apply str (for [[i name] (take 6 (map-indexed vector species))]
                               (card (str (clojure.core/name name) " population")
-                                    (str "<h3>Retained probability by copy number</h3>"
+                                    (str "<h3>" (if certificate "Certified lower probability" "Retained probability") " by copy number</h3>"
                                          (bar-chart (str name " marginal") (marginal states final-probabilities i)))))))
         timeline (when (and (seq states) (or trajectory (some :filtered steps)))
                    (let [series (or trajectory steps)]
@@ -119,7 +120,14 @@
                                         ["Escaped probability" (if (contains? result :escape-probability)
                                                                   (format-number (:escape-probability result)) "see diagnostics")]]]
                       (str "<div class=\"metric\"><strong>" (escape value) "</strong><span>" label "</span></div>")))
-         "</div></header><div class=\"grid\">" charts timeline
+         "</div></header><div class=\"grid\">"
+         (when-let [interval (:event-interval result)]
+           (card "Certified event enclosure"
+                 (str "<p class=\"muted\">Exact rational bounds, independently checked from source reactions.</p>"
+                      (table ["Lower bound" "Upper bound" "Interval width"]
+                             [[(format-number (:lower interval)) (format-number (:upper interval))
+                               (format-number (- (:upper interval) (:lower interval)))]]))))
+         charts timeline
          (when (seq (:first-passage result))
            (card "First-passage probability"
                  (line-chart "First-passage interval"
@@ -131,8 +139,9 @@
                         (map #(vector (:attempt %) (:states %) (format-number (:escape %)) (format-number (:series-tail %))) history))))
          (card "Reaction network" (reaction-table model))
          (card "Reading this result"
-               (str "<p class=\"muted\">Escape is probability that has left the finite projection. "
-                    "The Poisson tail is a separate series approximation. Neither includes a formal bound on binary64 roundoff.</p>"
+               (str (if certificate
+                      "<p class=\"muted\">This result uses exact integer and ratio arithmetic. Its mass deficit accounts for omitted positive series terms and the rational exponential enclosure. The independent checker reconstructs every transition from source reactions.</p>"
+                      "<p class=\"muted\">Escape is probability that has left the finite projection. The Poisson tail is a separate series approximation. Neither includes a formal bound on binary64 roundoff.</p>")
                     (when (:projection-conditioned? result)
                       "<p class=\"warning\">Posterior calculations condition on paths retained by the projection. Compare larger projections before interpreting them.</p>")
                     "<p class=\"muted\">Sample-path uncertainty is statistical. A completed numerical run does not imply a scientifically adequate model.</p>"))

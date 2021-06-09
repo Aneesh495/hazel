@@ -90,7 +90,9 @@
           :first-passage {:status :complete :first-passage (first-passage/cdf q initial
                                                                                            (predicate/compile-predicate model (:target experiment)) times solver)}
           :hitting (assoc (backward/hitting q (predicate/compile-predicate model (:target experiment))) :status :complete)
-          :stationary (assoc (stationary/solve q) :status :complete)
+          :stationary (let [r (stationary/solve q)]
+                        (cond-> (assoc r :status :complete)
+                          (:unique? r) (assoc :probabilities (-> r :classes first :probabilities))))
           :sensitivity (assoc (sensitivity/propagate model q initial parameters time solver) :status :complete :time time)
           :filter (let [r (filter/forward q initial sensors observations solver)]
                     (cond-> r

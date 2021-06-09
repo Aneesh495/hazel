@@ -78,3 +78,11 @@ not byte-reproducible between fresh JVMs. Compile only a minimal Clojure bootstr
 and bundle application namespaces as source, which uses the normal runtime JIT
 path. The regression compares fresh build hashes on the same runtime. This does
 not promise identical artifacts across different Clojure or JDK releases.
+
+## HZ-010: SVG axes filled the plotting area
+
+Visual inspection found a black triangle behind plotted bars. SVG closes open
+paths for filling, even when the path is intended only as an axis stroke. Set
+`fill="none"` explicitly on both chart axis paths. The permanent regression
+parses generated SVG and checks the path's fill contract. Its initial test failed
+for both charts before the correction.
