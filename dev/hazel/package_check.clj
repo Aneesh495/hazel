@@ -33,6 +33,10 @@
         jar (io/file "target/hazel.jar")
         copied (io/file directory "hazel.jar")
         _ (Files/copy (.toPath jar) (.toPath copied) (into-array StandardCopyOption [StandardCopyOption/REPLACE_EXISTING]))
+        _ (with-open [archive (java.util.jar.JarFile. copied)]
+            (doseq [entry ["META-INF/licenses/EPL-1.0.html" "META-INF/licenses/NOTICE.txt"]]
+              (when-not (.getJarEntry archive entry)
+                (n/fail "Standalone package omits required runtime license notice" {:entry entry}))))
         _ (process! build-command root (io/file directory "build-second.log"))
         second-build (edn/read-file "target/build.edn")
         _ (when-not (= (:sha256 first-build) (:sha256 second-build))
