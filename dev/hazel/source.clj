@@ -8,7 +8,7 @@
   (let [root (.toPath (.getCanonicalFile (io/file ".")))]
     (->> (concat (mapcat #(let [dir (io/file %)] (when (.exists dir) (file-seq dir)))
                         ["src" "test" "dev" "resources" "examples" "bin" ".github"])
-                 (map io/file ["deps.edn" "Makefile"]))
+                 (map io/file ["deps.edn" "Makefile" ".gitattributes"]))
          (filter #(.isFile %))
          (map (fn [file]
                 (let [path (.toPath (.getCanonicalFile file))]

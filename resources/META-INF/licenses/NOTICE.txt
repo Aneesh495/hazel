@@ -1,0 +1,25 @@
+Hazel runtime distribution notices
+
+Hazel bundles unmodified runtime code from the following Clojure projects:
+
+  org.clojure/clojure 1.12.6
+  org.clojure/spec.alpha 0.5.238
+  org.clojure/core.specs.alpha 0.4.74
+
+These projects are copyright Rich Hickey and contributors and are distributed
+under the Eclipse Public License 1.0. A complete copy of that license is included
+in EPL-1.0.html in this directory. Existing notices in bundled source and class
+resources remain part of their respective distributions.
+
+Corresponding project source is available at:
+  https://github.com/clojure/clojure/tree/clojure-1.12.6
+  https://github.com/clojure/spec.alpha
+  https://github.com/clojure/core.specs.alpha
+
+Exact released artifacts and source archives are available under:
+  https://repo.maven.apache.org/maven2/org/clojure/clojure/1.12.6/
+  https://repo.maven.apache.org/maven2/org/clojure/spec.alpha/0.5.238/
+  https://repo.maven.apache.org/maven2/org/clojure/core.specs.alpha/0.4.74/
+
+Hazel's original implementation is separately distributed under the MIT license
+in the repository root. Bundling the runtime does not relicense that runtime.

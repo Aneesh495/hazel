@@ -9,10 +9,12 @@ independently licensed runtime components from Maven Central:
 | `org.clojure/spec.alpha` | 0.5.238 | Eclipse Public License 1.0 |
 | `org.clojure/core.specs.alpha` | 0.4.74 | Eclipse Public License 1.0 |
 
-The packager retains license, notice, and copyright entries under
+The package includes a complete EPL 1.0 copy and attribution under
+`META-INF/licenses/`. The packager also retains license, notice, and copyright entries under
 `META-INF/licenses/<artifact filename>/` to avoid name collisions. Runtime
 artifacts can contain their own additional notices; inspect those retained
-files for the complete distribution terms.
+files for the complete distribution terms. The runtime Maven archives do not
+all contain standalone license files, so the committed license copy is required.
 
 Official project and license sources:
 

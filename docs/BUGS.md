@@ -86,3 +86,11 @@ paths for filling, even when the path is intended only as an axis stroke. Set
 `fill="none"` explicitly on both chart axis paths. The permanent regression
 parses generated SVG and checks the path's fill contract. Its initial test failed
 for both charts before the correction.
+
+## HZ-011: runtime archives lacked standalone license entries
+
+The package copied any dependency license files it found, but the three Maven
+runtime archives did not all contain such files. The package regression now
+requires a complete EPL 1.0 copy and attribution notice. Commit those resources
+explicitly with source locations and released artifact URLs. The new package
+check failed before the resources were added.
