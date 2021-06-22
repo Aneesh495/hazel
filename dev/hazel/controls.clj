@@ -14,8 +14,7 @@
             [hazel.ctmc.certificate :as certificate]
             [hazel.analysis.certificate-check :as checker]
             [hazel.simulation.direct :as direct]
-            [hazel.simulation.importance :as importance]
-            [hazel.math.numeric :as n]))
+            [hazel.simulation.importance :as importance]))
 
 (defn- rejected [f]
   (try (f) {:detected? false :observation :accepted}

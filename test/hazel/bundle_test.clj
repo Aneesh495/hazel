@@ -1,6 +1,5 @@
 (ns hazel.bundle-test
   (:require [clojure.test :refer [deftest is]]
-            [clojure.java.io :as io]
             [hazel.fixtures :as f]
             [hazel.io.bundle :as bundle]
             [hazel.io.edn :as edn]))

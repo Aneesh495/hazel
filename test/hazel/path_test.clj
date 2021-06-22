@@ -2,7 +2,6 @@
   (:require [clojure.test :refer [deftest is]]
             [hazel.fixtures :as f]
             [hazel.simulation.direct :as direct]
-            [hazel.model.network :as net]
             [hazel.analysis.path :as path]
             [hazel.analysis.reversal :as reversal]
             [hazel.analysis.stationary :as stationary]

@@ -3,8 +3,7 @@
   Nonlinear macroscopic hazards use x^s/s!, not discrete falling factorials."
   (:require [hazel.math.numeric :as n]
             [hazel.math.linear :as l]
-            [hazel.math.ode :as ode]
-            [hazel.math.probability :as probability]))
+            [hazel.math.ode :as ode]))
 
 (defn- factorial [k] (reduce *' 1N (range 1 (inc k))))
 

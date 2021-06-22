@@ -1,7 +1,6 @@
 (ns hazel.analysis.distribution
   "Queries preserve the distinction between captured and conditional probability."
-  (:require [hazel.math.numeric :as n]
-            [hazel.math.probability :as probability]))
+  (:require [hazel.math.numeric :as n]))
 
 (defn state-probabilities [q result]
   (n/same-size! (:rows q) (:probabilities result))

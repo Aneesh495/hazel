@@ -21,7 +21,7 @@
 (defn sample
   [model parameters sensors observations priors iterations seed
    {:keys [particles proposal-scales max-events]
-    :or {particles 200 max-events 1000000} :as options}]
+    :or {particles 200 max-events 1000000}}]
   (n/natural! :iterations iterations) (random/seed seed)
   (let [scales (or proposal-scales (vec (repeat (count parameters) 0.15)))
         initial (mapv #(n/positive! :initial-parameter (get (:parameters model) %)) parameters)

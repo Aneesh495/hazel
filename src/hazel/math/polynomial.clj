@@ -1,7 +1,6 @@
 (ns hazel.math.polynomial
   "Sparse multivariate polynomials with exponent-vector keys and exact coefficients.
   Operations retain rational arithmetic and enforce explicit expansion budgets."
-  (:refer-clojure :exclude [constant?])
   (:require [hazel.math.numeric :as n]
             [hazel.math.probability :as probability]))
 

@@ -6,8 +6,7 @@
             [hazel.ctmc.generator :as g]
             [hazel.ctmc.certificate :as certificate]
             [hazel.analysis.certificate-check :as checker]
-            [hazel.math.rational :as rational]
-            [hazel.math.probability :as probability]))
+            [hazel.math.rational :as rational]))
 
 (deftest exact-exponential-enclosures
   (doseq [x [0 1/3 1] order [4 8 16]]

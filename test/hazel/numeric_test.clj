@@ -1,5 +1,5 @@
 (ns hazel.numeric-test
-  (:require [clojure.test :refer [deftest is testing]]
+  (:require [clojure.test :refer [deftest is]]
             [hazel.math.numeric :as n]))
 
 (deftest compensated-sums

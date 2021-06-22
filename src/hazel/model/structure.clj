@@ -1,7 +1,6 @@
 (ns hazel.model.structure
   "Exact stoichiometric invariants and reaction-complex topology."
   (:require [hazel.math.linear :as l]
-            [hazel.math.numeric :as n]
             [hazel.math.graph :as graph]
             [hazel.model.network :as net]))
 

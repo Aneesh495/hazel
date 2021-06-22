@@ -3,7 +3,6 @@
             [hazel.fixtures :as f]
             [hazel.math.graph :as g]
             [hazel.model.structure :as s]
-            [hazel.model.kinetics :as k]
             [hazel.model.network :as net]))
 
 (deftest conservation-and-deficiency

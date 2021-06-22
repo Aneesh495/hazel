@@ -36,11 +36,11 @@
                                                            (if (and (or (integer? a) (ratio? a))
                                                                     (or (integer? b) (ratio? b))) (= a b) (== a b))) reference actual))]]
                        {:reference (first indexes) :state i :residual residual :equal? equal? :expected reference :actual actual})
-         worst (reduce (fn [a b] (if (> (:residual b) (:residual a)) b a)) {:residual 0.0} differences)]
-     (let [bad (if (zero? tolerance) (first (remove :equal? differences))
-                   (first (filter #(> (:residual %) tolerance) differences)))]
+         worst (reduce (fn [a b] (if (> (:residual b) (:residual a)) b a)) {:residual 0.0} differences)
+         bad (if (zero? tolerance) (first (remove :equal? differences))
+                 (first (filter #(> (:residual %) tolerance) differences)))]
        {:lumpable? (nil? bad) :maximum-residual (:residual worst)
-        :counterexample bad :blocks blocks}))))
+        :counterexample bad :blocks blocks})))
 
 (defn refine
   "Split exact rate signatures until a fixed point. No numeric rounding in keys."
