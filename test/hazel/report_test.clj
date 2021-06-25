@@ -1,6 +1,7 @@
 (ns hazel.report-test
   (:require [clojure.test :refer [deftest is]]
             [clojure.xml :as xml]
+            [hazel.fixtures :as fixtures]
             [hazel.io.report :as report]))
 
 (defn- path-elements [svg]
@@ -14,3 +15,10 @@
                (report/line-chart "Trajectory" [{:name "mean" :points [[0 0] [1 1]]}])]
           path (path-elements svg)]
     (is (= "none" (get-in path [:attrs :fill])))))
+
+(deftest displayed-rational-enclosure-rounds-outward-regression
+  (let [html (report/render fixtures/birth {:kind :certify}
+                             {:status :complete :certificate {}
+                              :event-interval {:lower 1/3 :upper 1/3}} "test")
+        displayed (mapv (comp rationalize bigdec second) (re-seq #"<td>([0-9.]+)</td>" html))]
+    (is (<= (first displayed) 1/3 (second displayed)))))
