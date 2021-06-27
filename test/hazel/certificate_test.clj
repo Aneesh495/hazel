@@ -35,3 +35,8 @@
     (is (thrown? clojure.lang.ExceptionInfo (certificate/create f/death q 1))))
   (let [model (net/with-parameters f/death {:death 7/10}) q (g/build (p/enumerate model))]
     (is (= :verified (:status (checker/check model (certificate/create model q 1/2)))))))
+
+(deftest disabled-floating-rate-is-still-inexact-regression
+  (let [model (net/with-parameters f/birth {:birth 0.0})
+        q (g/for-states model [[0] [1]])]
+    (is (thrown? clojure.lang.ExceptionInfo (certificate/create model q 1)))))
