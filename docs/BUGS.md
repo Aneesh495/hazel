@@ -94,3 +94,19 @@ runtime archives did not all contain such files. The package regression now
 requires a complete EPL 1.0 copy and attribution notice. Commit those resources
 explicitly with source locations and released artifact URLs. The new package
 check failed before the resources were added.
+
+## HZ-012: decimal presentation narrowed an exact interval
+
+The report used ordinary nearest rounding for certificate endpoints. Displaying
+the exact interval `[1/3,1/3]` as `[0.3333,0.3333]` excludes the certified value.
+Format lower bounds with rational-to-decimal floor and upper bounds with ceiling,
+without passing through binary64. The permanent regression parses the displayed
+decimal endpoints and checks exact containment. Its original assertion failed.
+
+## HZ-013: a disabled floating rate bypassed certificate input checks
+
+The producer validated populated generator rates but overlooked a floating
+constant equal to zero, because that reaction created no edge. Its separate
+checker correctly rejected the same source. Validate every source reaction
+constant before producing a certificate, including disabled channels. The
+disabled-floating-rate regression was committed while failing, then retained.

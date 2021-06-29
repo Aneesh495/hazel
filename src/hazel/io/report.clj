@@ -4,6 +4,7 @@
             [clojure.string :as str]
             [clojure.pprint :as pprint]
             [hazel.io.bundle :as bundle]
+            [hazel.math.rational :as rational]
             [hazel.math.numeric :as n]))
 
 (defn escape [text]
@@ -16,6 +17,17 @@
           (zero? x) "0"
           :else (format "%.3e" (double x)))
     (escape x)))
+
+(defn format-rational-bound
+  "Decimal presentation must enclose the exact ratio, including rounding."
+  [value side]
+  (rational/exact! :display-bound value)
+  (let [numerator (if (ratio? value) (numerator value) value)
+        denominator (if (ratio? value) (denominator value) 1)
+        mode (case side :lower java.math.RoundingMode/FLOOR :upper java.math.RoundingMode/CEILING
+                   (n/fail "Unknown bound side" {:side side}))]
+    (.toPlainString (.divide (java.math.BigDecimal. (str numerator))
+                            (java.math.BigDecimal. (str denominator)) 16 mode))))
 
 (defn- svg [title content]
   (str "<svg viewBox=\"0 0 520 260\" role=\"img\" aria-label=\"" (escape title) "\">"
@@ -124,8 +136,8 @@
          (when-let [interval (:event-interval result)]
            (card "Certified event enclosure"
                  (str "<p class=\"muted\">Exact rational bounds, independently checked from source reactions.</p>"
-                      (table ["Lower bound" "Upper bound" "Interval width"]
-                             [[(format-number (:lower interval)) (format-number (:upper interval))
+                      (table ["Lower bound, rounded down" "Upper bound, rounded up" "Exact width, decimal display"]
+                             [[(format-rational-bound (:lower interval) :lower) (format-rational-bound (:upper interval) :upper)
                                (format-number (- (:upper interval) (:lower interval)))]]))))
          charts timeline
          (when (seq (:first-passage result))

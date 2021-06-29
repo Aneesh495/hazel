@@ -16,6 +16,8 @@
           (vec (repeat (:size q) 0N)) (range (:size q))))
 
 (defn- lower-step [q p lambda mean order exp-order]
+  ;; A positive polynomial in a stochastic matrix preserves componentwise
+  ;; lower bounds. The rational exponential factor is lower as well.
   (let [coefficients (r/coefficients mean order)
         factor (r/exp-negative-lower mean exp-order)]
     (loop [coefficients coefficients power p total (vec (repeat (:size q) 0N))]
@@ -30,6 +32,9 @@
    (g/validate q)
    (when-not (= (:model-hash q) (:hash model)) (n/fail "Certificate generator/model mismatch" {}))
    (r/nonnegative! :time time)
+   ;; Validate source rates as well as populated edges. A disabled floating
+   ;; channel has no edge, but it still violates the exact-input contract.
+   (doseq [reaction (:reactions model)] (r/nonnegative! :reaction-constant (:constant reaction)))
    (when (> (:size q) 65) (n/fail "Rational certificate supports at most 64 population states" {}))
    (doseq [rate (:exits q)] (r/nonnegative! :exit-rate rate))
    (doseq [rate (map second (mapcat identity (:rows q)))] (r/nonnegative! :transition-rate rate))
@@ -48,6 +53,8 @@
                      (if (= i chunks) p
                          (recur (inc i) (lower-step q p lambda mean poisson-order exponential-order)))))
          deficit (- 1N (r/sum lower))
+         ;; The deficit combines every omitted series term and enclosure loss.
+         ;; Retaining it once avoids assuming where uncomputed mass would land.
          escape (peek lower)]
      (when (or (neg? deficit) (some neg? lower)) (n/fail "Exact lower-distribution invariant failed" {}))
      {:format :hazel/certificate-v1 :status :bounded
