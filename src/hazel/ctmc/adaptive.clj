@@ -15,6 +15,8 @@
    (let [limits (structure/nonnegative-bounds model)]
      (loop [bounds (or bounds (p/default-bounds model)) attempt 0 history []]
        (let [projection (p/enumerate model {:bounds bounds :max-states max-states})
+             ;; Restart from the original point mass after each enlargement.
+             ;; A previous escape component cannot be redistributed soundly.
              q (g/build projection)
              result (u/solve q (:initial model) time
                              (merge (select-keys options [:max-chunks :max-terms])

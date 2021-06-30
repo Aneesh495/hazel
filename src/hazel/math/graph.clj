@@ -24,6 +24,8 @@
             (recur (rest roots) seen order)
             (let [[seen order]
                   (loop [stack [[root false]] seen seen order order]
+                    ;; A post-visit marker replaces recursive return. This keeps
+                    ;; deep reaction/state graphs off the JVM call stack.
                     (if (empty? stack) [seen order]
                         (let [[v expanded?] (peek stack) stack (pop stack)]
                           (cond expanded? (recur stack seen (conj order v))

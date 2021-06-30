@@ -31,6 +31,8 @@
         index (zipmap basis (range))
         equations (mapv #(generator-action model (polynomial/monomial %)) basis)
         unclosed (set (remove #(contains? index %) (mapcat keys equations)))]
+    ;; The degree cutoff is a closure question, not a truncation instruction.
+    ;; Missing monomials make the hierarchy unclosed and prevent integration.
     {:basis basis :equations equations :maximum-order maximum-order
      :closed? (empty? unclosed) :unclosed-monomials unclosed
      :matrix (when (empty? unclosed)

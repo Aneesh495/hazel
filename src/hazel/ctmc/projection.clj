@@ -46,6 +46,8 @@
                              [states index (conj row (assoc edge :destination :escape))
                               (conj frontier (assoc edge :source cursor :reason reason))]
                              (let [destination (or known (count states))]
+                               ;; Every newly admitted state receives a stable BFS
+                               ;; index. Boundary edges stay in both row and frontier.
                                [(if known states (conj states target))
                                 (if known index (assoc index target destination))
                                 (conj row (assoc edge :destination destination)) frontier]))))
@@ -61,6 +63,8 @@
   "Recompute edges on a fixed state set, including states reached at zero base rate.
   Used for parameter derivatives, schedules, and likelihood comparisons."
   [model states]
+  ;; Fixed means fixed populations, not frozen hazards. Re-evaluate every
+  ;; channel so a parameter change can enable edges missing at the base rate.
   (net/compiled! model)
   (when-not (and (vector? states) (seq states) (= (count states) (count (set states))))
     (n/fail "Fixed projection requires distinct states" {}))

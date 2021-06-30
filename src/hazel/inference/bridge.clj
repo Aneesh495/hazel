@@ -39,6 +39,8 @@
              weights (:weights window)
              powers (vec (take (count weights) (iterate #(sparse/stochastic-product kernel %) initial)))
              conditional (mapv #(* %1 (get %2 to)) weights powers)
+             ;; Endpoint weighting changes the Poisson event-count law. Drawing
+             ;; an unconditioned count and then forcing its endpoint is biased.
              [count rng] (random/categorical seed conditional)
              [indexes rng]
              (loop [k count current to rng rng reversed [to]]
@@ -48,6 +50,8 @@
                          [previous rng] (random/categorical rng weights)]
                      (recur (dec k) previous rng (conj reversed previous)))))
              [times rng] (loop [i 0 rng rng times []]
+                           ;; Conditional on the count, Poisson event locations
+                           ;; are ordered independent uniform times in the window.
                            (if (= i count) [(vec (sort times)) rng]
                                (let [[u rng] (random/uniform rng)]
                                  (recur (inc i) rng (conj times (* time u))))))

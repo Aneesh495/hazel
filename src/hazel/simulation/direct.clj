@@ -22,6 +22,8 @@
            (= event-count max-events) (assoc base :status :event-budget-exhausted)
            :else
            (let [[wait next-rng] (random/exponential rng total) next-time (+ time wait)]
+             ;; Draw the channel only if its event lies in the requested window.
+             ;; record? changes storage, never the stream's sequence of draws.
              (when-not (> next-time time)
                (n/fail "Reaction time cannot advance at binary64 precision" {:time time :rate total}))
              (if (> next-time horizon)

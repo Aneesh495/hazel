@@ -43,6 +43,8 @@
                         (if (= attempt max-backtracks) nil
                             (let [candidate (project (n/axpy alpha direction x) bounds)
                                   delta (mapv - candidate x)
+                                  ;; Armijo must use the actual projected step,
+                                  ;; not alpha*direction before clipping at bounds.
                                   slope (n/dot gradient delta)]
                               (if (>= slope 0) (recur (* 0.5 alpha) (inc attempt))
                                   (let [next (evaluate f candidate)]
@@ -52,6 +54,8 @@
              (if-not line (assoc result :status :line-search-failed)
                  (let [s (:delta line) next (:result line) y (mapv - (:gradient next) gradient)
                        curvature (n/dot y s)
+                       ;; Positive curvature preserves a positive inverse metric.
+                       ;; Reset rather than amplify a nearly singular update.
                        inverse (if (<= curvature (* 1e-12 (n/l2 y) (n/l2 s))) eye
                                    (let [rho (/ 1.0 curvature)
                                          left (l/add eye (l/scale (- rho) (l/outer s y)))

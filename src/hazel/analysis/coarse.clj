@@ -19,6 +19,8 @@
              (mapv #(mapv first (val %)))) [(:sink q)]))
 
 (defn- signature [q index block-of block-count]
+  ;; Include the negative diagonal when accumulating the source block. Summing
+  ;; positive outgoing edges alone is not a generator block-rate signature.
   (let [rates (reduce (fn [v [j rate]] (update v (block-of j) +' rate))
                       (vec (repeat block-count 0)) (get (:rows q) index))]
     (update rates (block-of index) - (get (:exits q) index))))

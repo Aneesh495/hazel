@@ -14,6 +14,8 @@
             (let [p (subvec state 0 size) m (subvec state size (* 2 size)) s (subvec state (* 2 size))
                   dp (sparse/generator-product kernel p)
                   dm (n/add (sparse/generator-product kernel m) (first-action p))
+                  ;; Differentiating a tilted generator twice gives 2*m*B+p*C.
+                  ;; Event counts have C=B; continuous occupation rewards have C=0.
                   ds (-> (n/axpy 2.0 (first-action m) (sparse/generator-product kernel s))
                          (n/add (second-action p)))]
               (into (into dp dm) ds)))
@@ -38,6 +40,8 @@
   "Counts include state-preserving reactions and the event that exits a projection."
   [q initial time reaction-id options]
   (let [events (:events q)
+        ;; Original labeled edges include real self events discarded from Q.
+        ;; Their destination still matters for state-weighted count moments.
         action (fn [p]
                  (let [out (double-array (:size q)) sink (:sink q)]
                    (doseq [[i row] (map-indexed vector events)

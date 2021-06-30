@@ -26,11 +26,15 @@
     generator))
 
 (defn build [projection]
+  ;; Multiple reaction labels can reach one population. Aggregate their rates
+  ;; in Q, while retaining original labeled events for path-count observables.
   (let [states (:states projection) sink (count states)
         rows (mapv (fn [i edges]
                      (->> edges
                           (reduce (fn [rates {:keys [destination rate]}]
                                     (let [j (if (= destination :escape) sink destination)]
+                                      ;; A real self event changes reaction counts,
+                                      ;; but not the population process's exit rate.
                                       (if (= i j) rates (update rates j (fnil +' 0) rate)))) {})
                           (sort-by key) (mapv vec)))
                    (range sink) (:edges projection))

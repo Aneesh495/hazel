@@ -21,6 +21,9 @@
          reverse (graph/reverse-graph (adjacency q))
          can-hit (reduce into #{} (map #(graph/reachable reverse %) targets))
          unknown (vec (sort (remove targets can-hit)))
+         ;; States unable to reach the target are failure boundaries, including
+         ;; escape and closed non-target classes. Removing them avoids a singular
+         ;; all-state system without pretending their hit probability is one.
          a (mapv (fn [i] (mapv #(- (double (g/rate q i %))) unknown)) unknown)
          b (mapv (fn [i] (n/sum (map #(g/rate q i %) targets))) unknown)
          solution (if (empty? unknown) [] (l/solve-scaled a b))
@@ -28,6 +31,8 @@
                    (reduce #(assoc %1 %2 1.0) (vec (repeat (:size q) 0.0)) targets)
                    (map vector unknown solution))
          weighted-times (if (empty? unknown) [] (l/solve-scaled a (mapv h unknown)))
+         ;; g=E[T*1_hit] solves -Q*g=h. Dividing by h gives conditional time;
+         ;; an unconditional finite mean is justified only when h is one.
          conditional (reduce (fn [t [i value]]
                                (assoc t i (when (pos? (h i)) (/ value (h i)))))
                              (reduce #(assoc %1 %2 0.0) (vec (repeat (:size q) nil)) targets)

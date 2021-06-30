@@ -10,6 +10,9 @@
             (> (n/l1 (sparse/generator-product (sparse/compile-kernel q) pi)) 1e-9))
     (n/fail "Time reversal requires a stationary population distribution" {}))
   (let [rows (reduce (fn [rows [i row]]
+                       ;; Reversal is only defined on stationary positive support.
+                       ;; Keep other indexes visible as undefined, not inferred
+                       ;; transient reverse dynamics.
                        (reduce (fn [rows [j rate]]
                                  (if (and (pos? (pi i)) (pos? (pi j)))
                                    (update rows j conj [i (/ (* (pi i) rate) (pi j))]) rows)) rows row))

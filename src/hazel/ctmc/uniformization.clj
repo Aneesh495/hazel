@@ -31,6 +31,8 @@
        (n/fail "Invalid uniformization rate or time product" {}))
      (n/natural! :max-chunks max-chunks)
      (let [required (max 1.0 (Math/ceil (/ product 32.0)))]
+       ;; Small Poisson means make recurrence from exp(-mean) well conditioned.
+       ;; Chunking also avoids underflow at the start of a very long series.
        (when (> required max-chunks)
          (n/fail "Uniformization chunk budget exhausted" {:required required :budget max-chunks}))
        (let [chunks (long required) mean (/ product chunks)
@@ -41,6 +43,8 @@
                      (recur (inc i) (series kernel p weights lambda))))
              mass (n/sum p) initial-mass (n/sum initial)
              expected (* initial-mass (Math/pow (:weight-sum window) chunks))
+             ;; Stochastic propagation contracts L1 error, so earlier omitted
+             ;; probability cannot grow under later chunks. Never renormalize p.
              tail (* initial-mass chunks (:tail-bound window))]
          (n/checked-result :transient-probability p)
          (when (some #(< % -1e-14) p) (n/fail "Uniformization produced negative mass" {}))
@@ -76,6 +80,8 @@
        (if (empty? times) results
            (let [t (first times) result (propagate q p (- t previous) options)
                  tail (+ tail (:series-tail-bound result))]
+             ;; Escape already persists in the absorbing state. Series omission
+             ;; has no state component and must be accumulated separately.
              (recur (rest times) t (:probabilities result) tail
                     (conj results (assoc result :time t :series-tail-bound tail
                                         :truncation-bound (min 1.0 (+ (:escape-probability result) tail)))))))))))

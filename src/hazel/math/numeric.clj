@@ -42,6 +42,8 @@
 (defn sum
   "Neumaier compensated sum, including mixed-magnitude and signed inputs."
   [xs]
+  ;; Recover the low-order part lost by the addition. Neumaier's magnitude
+  ;; branch also handles a new summand larger than the running total.
   (let [[s c] (reduce (fn [[s c] x]
                         (let [x (double x) t (+ s x)]
                           [t (+ c (if (>= (abs s) (abs x))

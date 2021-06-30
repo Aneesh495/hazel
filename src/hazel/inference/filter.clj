@@ -23,6 +23,8 @@
        {:status :complete :probabilities p :log-likelihood log-evidence
         :projection-conditioned? true :steps steps :initial initial}
        (let [measurement (first observations) dt (- (:time measurement) time)
+             ;; Escape has no known population and therefore no invented sensor
+             ;; likelihood. Each posterior explicitly conditions on retained paths.
              prediction (u/propagate q p dt options)
              emission (observation/emission q sensors measurement)
              conditioned (condition (:probabilities prediction) emission)

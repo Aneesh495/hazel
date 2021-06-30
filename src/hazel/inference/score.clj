@@ -31,6 +31,8 @@
             weighted-s (mapv #(mapv * (get (:sensitivities predicted) %) emission) parameters)
             dz (mapv n/sum weighted-s)
             next-tangents (zipmap parameters
+                                 ;; Differentiate normalized probability, including
+                                 ;; z's derivative. The result must sum to zero.
                                  (mapv (fn [s derivative]
                                          (n/scale (/ 1.0 z) (mapv #(- %1 (* %2 derivative)) s filtered)))
                                        weighted-s dz))

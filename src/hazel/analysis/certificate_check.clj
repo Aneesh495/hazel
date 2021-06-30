@@ -12,6 +12,9 @@
          (reduce *' 1N (range 1 (inc s))))))
 
 (defn- reconstruct [model states]
+  ;; The supplied state set need not be the producer's reachable BFS order.
+  ;; Any distinct finite set containing the initial state defines a valid FSP;
+  ;; all missing destinations must still enter the absorbing escape index.
   (let [species (:species model) source (:source model)
         sink (count states) index (zipmap states (range))]
     (conj
@@ -76,6 +79,8 @@
                                                   (range size))]
                              (recur (inc k) (/ (*' coefficient mean) (inc k)) next-power result))))))
             computed (if (zero? lambda) initial (nth (iterate step initial) chunks))
+            ;; Equality checks below are exact ratio comparisons. No decimal
+            ;; tolerance can turn a modified component into an accepted bound.
             deficit (- 1N (r/sum computed))
             escape (peek computed)]
         (when-not (and (= computed lower-probabilities) (= deficit mass-deficit)

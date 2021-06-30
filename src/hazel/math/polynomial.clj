@@ -61,6 +61,8 @@
                             (assoc result (update exponents index dec) (*' coefficient order))))) {} p)))
 
 (defn shift-monomial [exponents delta]
+  ;; Expand f(x+delta) one variable at a time. Negative stoichiometric changes
+  ;; are ordinary polynomial shifts; disabled reactions later multiply by zero.
   (n/same-size! exponents delta)
   (let [dimensions (count exponents)]
     (reduce multiply (constant dimensions 1N)
@@ -80,6 +82,8 @@
 (defn basis
   "All monomials up to a total degree, ordered by degree then lexicographically."
   [dimensions maximum-order]
+  ;; Check the combinatorial size before constructing weak compositions.
+  ;; A small degree is not enough protection when species count is large.
   (n/natural! :dimensions dimensions) (n/natural! :maximum-order maximum-order)
   (when (or (zero? dimensions) (> maximum-order 12)
             (> (probability/choose (+ dimensions maximum-order) maximum-order) 10000))

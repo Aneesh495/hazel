@@ -33,12 +33,16 @@
                          terms (when (every? n/finite? values)
                                  (mapv #(log-prior %1 (get priors %2)) values parameters))
                          prior (if (or (nil? terms) (some #{##-Inf} terms))
+                                 ;; A compensated finite sum cannot represent a
+                                 ;; support failure. Preserve -infinity explicitly.
                                  ##-Inf (n/sum terms))]
                      (if (= prior ##-Inf) {:status :outside-prior :target ##-Inf}
                          (let [candidate (net/with-parameters model (zipmap parameters values))
                                result (particle/filter candidate sensors observations particles particle-seed
                                                        {:max-events max-events})]
                            (case (:status result)
+                             ;; Symmetric proposals are in log coordinates.
+                             ;; sum(z) is the parameter-space Jacobian term.
                              :complete {:status :complete :target (+ prior (n/sum z) (:log-likelihood result))
                                         :log-likelihood (:log-likelihood result) :particle-seed particle-seed}
                              :zero-evidence {:status :zero-evidence :target ##-Inf}
@@ -62,6 +66,8 @@
               (let [[u rng] (random/uniform rng)
                     accept? (< (Math/log u) (- (:target candidate) (:target current)))
                     z (if accept? proposal z) current (if accept? candidate current)
+                    ;; Rejected proposals keep the old likelihood realization.
+                    ;; Refreshing it would change the pseudo-marginal algorithm.
                     record {:parameters (zipmap parameters (mapv #(Math/exp %) z))
                             :log-likelihood-estimate (:log-likelihood current)
                             :particle-seed (:particle-seed current) :accepted? accept?}]

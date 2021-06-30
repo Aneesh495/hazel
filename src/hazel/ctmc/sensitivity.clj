@@ -24,6 +24,9 @@
           out-s (mapv #(n/axpy weight %1 %2) tangents out-s)]
       (if (empty? (next weights)) [out-p out-s]
           (let [next-s (mapv (fn [s derivative]
+                               ;; The product rule acts on the previous p power.
+                               ;; Using the already advanced power shifts forcing
+                               ;; by one virtual event and biases the derivative.
                                (n/axpy (/ 1.0 lambda)
                                        (sparse/generator-product derivative p)
                                        (sparse/stochastic-product kernel s lambda))) tangents derivatives)]
@@ -47,6 +50,8 @@
      (when-not (= (count parameters) (count tangents)) (n/fail "Sensitivity dimension mismatch" {}))
      (doseq [s tangents] (n/same-size! initial s) (n/checked-result :sensitivity s))
      (if (zero? lambda)
+       ;; Here exp(Qt)=I but its parameter derivative need not be zero. A zero
+       ;; base rate still has a nonzero first-order effect when switched on.
        {:probabilities initial
         :sensitivities (zipmap parameters (mapv #(n/axpy time (sparse/generator-product %1 initial) %2)
                                                derivatives tangents))
@@ -57,6 +62,8 @@
                window (probability/poisson-window mean (/ tolerance chunks))
                weights (:weights window) tail (:tail-bound window)
                count-tail (* mean (+ (peek weights) tail))]
+           ;; Sum k*w_k beyond K equals mean*P(N>=K). This controls the
+           ;; derivative forcing, whose kth power can grow linearly with k.
            (loop [i 0 p initial tangents tangents probability-error 0.0
                   errors (vec (repeat (count parameters) 0.0))]
              (if (= i chunks)

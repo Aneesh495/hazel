@@ -26,6 +26,8 @@
                                    states events))]
     (if has-impossible? ##-Inf
         (- (:log-density (path/statistics target (assoc trace :model-hash (:hash target))))
+           ;; Both event hazards and censored waiting exposure enter the density.
+           ;; Correcting only reaction labels would use the wrong path measure.
            (:log-density (path/statistics proposed trace))))))
 
 (defn estimate
@@ -84,6 +86,9 @@
                 (let [weights (mapv #(Math/exp (- % log-z)) logs)
                       statistics (mapv #(path/statistics proposed %) event-paths)
                       next (reduce (fn [changes parameter]
+                                     ;; The weighted complete-path rate MLE is
+                                     ;; reaction count divided by integrated factor
+                                     ;; exposure. Pilot draws are not production draws.
                                      (let [counts (n/sum (map #(* %2 (get-in %1 [:parameter-statistics parameter :count] 0)) statistics weights))
                                            exposure (n/sum (map #(* %2 (get-in %1 [:parameter-statistics parameter :exposure] 0)) statistics weights))
                                            old (get (:parameters proposed) parameter)

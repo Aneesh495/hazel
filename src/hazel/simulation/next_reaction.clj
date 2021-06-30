@@ -35,6 +35,8 @@
                      (n/fail "Next-reaction time cannot advance" {:time time :next-time next-time}))
                  next-state (k/fire model state reaction)
                  affected (sort (conj (dependencies reaction) reaction))
+                 ;; The fired clock must restart even for a state-preserving
+                 ;; channel absent from its own population dependency set.
                  [rates clocks queue rng]
                  (reduce
                   (fn [[rates clocks queue rng] j]
@@ -44,6 +46,8 @@
                           [new-time rng]
                           (if (or (= j reaction) (zero? old-rate))
                             (schedule rng next-time new-rate)
+                            ;; Preserve the remaining integrated hazard for an
+                            ;; unfired channel whose positive rate changes.
                             [(if (zero? new-rate) ##Inf
                                  (+ next-time (* (/ old-rate new-rate) (- old-time next-time)))) rng])]
                       [(assoc rates j new-rate) (assoc clocks j new-time)

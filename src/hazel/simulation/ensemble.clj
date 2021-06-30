@@ -39,6 +39,8 @@
    (n/natural! :samples samples)
    (when-not (<= 1 samples 1000000) (n/fail "Ensemble size must be in 1..1000000" {}))
    (let [paths (ordered-map workers
+                            ;; Index-derived streams and ordered collection make
+                            ;; worker scheduling irrelevant to the experiment.
                             (fn [i] (direct/simulate model time (random/split seed i)
                                                       {:record? false :max-events max-events}))
                             (range samples))

@@ -44,6 +44,8 @@
         (let [step (steps k)
               smoothed (:probabilities (n/normalize (mapv * (:filtered step) beta)))
               weighted (mapv * (scaled-emission (:log-emission step)) beta)
+              ;; Backward messages are columns: exp(Q*dt) acts from the left.
+              ;; A row propagation here would reverse the transition convention.
               beta (backward-propagate q weighted (:dt step))
               beta (n/scale (/ 1.0 (apply max beta)) beta)]
           (recur (dec k) beta (conj results {:time (:time step) :probabilities smoothed})))))))
@@ -61,6 +63,8 @@
                        steps (reverse indexes))}
           (let [target (assoc (vec (repeat (:size q) 0.0)) next-state 1.0)
                 column (backward-propagate q target (:dt (steps (inc k))))
+                ;; Conditioning on the next sampled state removes future data
+                ;; from this predecessor draw; filtered mass supplies the past.
                 weights (mapv * (:filtered (steps k)) column)
                 [state rng] (random/categorical rng weights)]
             (recur (dec k) state rng (conj indexes state))))))))

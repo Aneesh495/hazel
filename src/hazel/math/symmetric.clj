@@ -26,6 +26,8 @@
              (= count budget) (n/fail "Symmetric eigensolver rotation budget exhausted" {})
              :else
              (let [app (get-in a [p p]) aqq (get-in a [q q]) apq (get-in a [p q])
+                   ;; This tangent form avoids subtracting nearly equal roots.
+                   ;; hypot also avoids overflowing tau*tau for disparate scales.
                    tau (/ (- aqq app) (* 2 apq))
                    t (/ (if (neg? tau) -1.0 1.0) (+ (abs tau) (Math/hypot 1.0 tau)))
                    c (/ 1.0 (Math/sqrt (+ 1 (* t t)))) s (* t c)

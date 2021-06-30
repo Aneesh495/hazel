@@ -32,6 +32,8 @@
         temp (Files/createTempFile parent ".hazel-" ".tmp" (make-array java.nio.file.attribute.FileAttribute 0))]
     (try
       (with-open [stream (java.io.FileOutputStream. (.toFile temp))]
+        ;; Keep the old destination intact until every new byte is written and
+        ;; synced. The sibling temporary file stays on the same filesystem.
         (.write stream (.getBytes ^String text StandardCharsets/UTF_8))
         (.sync (.getFD stream)))
       (try

@@ -21,6 +21,8 @@
      (n/fail "Stationary analysis requires a closed state space; projection escape is present" {}))
    (let [components (:closed (classes q)) kernel (sparse/compile-kernel q)]
      {:unique? (= 1 (count components))
+      ;; Each closed communicating class contributes an extremal stationary law.
+      ;; Do not choose mixing weights from an arbitrary normalization equation.
       :classes
       (mapv (fn [component]
               (let [indexes (vec (sort component)) size (count indexes)]

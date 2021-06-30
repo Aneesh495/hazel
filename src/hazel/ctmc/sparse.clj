@@ -21,6 +21,8 @@
 (defn generator-product
   "Row vector times Q. Signed vectors are supported for tangent equations."
   [kernel p]
+  ;; All contributions to a destination add into one invocation-local buffer.
+  ;; Shared kernel arrays are never changed by a forward or backward action.
   (dimensions! kernel p)
   (let [size (int (:size kernel))
         ^ints offsets (:offsets kernel) ^ints targets (:targets kernel)
@@ -45,6 +47,8 @@
    (when (< lambda (:lambda kernel))
      (n/fail "Uniformization rate is below a generator exit rate" {}))
    (if (zero? lambda) (mapv double p)
+       ;; Evaluate the stochastic diagonal directly. Forming p+pQ/lambda
+       ;; instead can cancel most of a dominant component before adding flux.
        (let [size (int (:size kernel))
              ^ints offsets (:offsets kernel) ^ints targets (:targets kernel)
              ^doubles rates (:rates kernel) ^doubles exits (:exits kernel)

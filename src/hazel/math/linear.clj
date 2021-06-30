@@ -47,6 +47,8 @@
   ([a {:keys [eps pivot-columns] :or {eps 0}}]
    (matrix! a)
    (let [[rows cols] (shape a) limit (or pivot-columns cols)]
+     ;; The augmented RHS is excluded from pivot selection by solve. Otherwise
+     ;; an inconsistent row could be mistaken for an independent coefficient.
      (loop [a a row 0 col 0 pivots []]
        (if (or (= row rows) (= col limit))
          {:matrix a :pivots pivots :rank (count pivots)}
@@ -103,6 +105,8 @@
    (matrix! a) (n/positive! :pivot-tolerance tolerance)
    (n/same-size! a b)
    (let [scales (mapv #(reduce max 0.0 (map (comp abs double) %)) a)]
+     ;; Scaling uses coefficients only. Including a large waiting-time RHS
+     ;; would make the pivot criterion depend on the unknown solution's units.
      (when (some zero? scales) (n/fail "Singular system contains a zero coefficient row" {}))
      (solve (mapv (fn [row scale] (mapv #(/ (double %) scale) row)) a scales)
             (mapv #(/ (double %1) %2) b scales) tolerance))))

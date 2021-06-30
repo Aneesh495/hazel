@@ -37,6 +37,8 @@
          {:status :complete :particles particles :weights weights :seed seed :rng-state rng
           :log-likelihood log-likelihood :steps steps :particle-count count}
          (let [measurement (first observations) dt (- (:time measurement) time)
+               ;; Fresh streams belong to descendants at this step. Resampling
+               ;; copies populations, not their future random-number histories.
                [step-seed rng] (random/next-long rng)
                paths (mapv (fn [i state]
                              (direct/simulate model dt (random/split step-seed i)
@@ -46,6 +48,8 @@
              {:status :event-budget-exhausted :log-likelihood nil :steps steps :seed seed}
              (let [predicted (mapv :final-state paths)
                    log-weights (mapv (fn [state weight]
+                                       ;; Without resampling, old unequal weights
+                                       ;; remain part of the next evidence estimate.
                                        (if (zero? weight) ##-Inf
                                            (+ (Math/log weight) (observation/log-likelihood sensors state measurement))))
                                      predicted weights)
@@ -53,6 +57,8 @@
                (if (= log-z ##-Inf)
                  {:status :zero-evidence :log-likelihood nil :steps steps :seed seed}
                  (let [weights (mapv #(Math/exp (- % log-z)) log-weights)
+                       ;; The log-evidence increment is saved before any optional
+                       ;; reset to equal post-resampling particle weights.
                        ess (probability/effective-sample-size weights)
                        resample? (< ess (* resample-threshold count))
                        [ancestors rng] (if resample? (systematic-resample rng weights) [(vec (range count)) rng])
