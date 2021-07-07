@@ -12,6 +12,9 @@
             [hazel.analysis.stationary :as stationary]
             [hazel.analysis.coarse :as coarse]
             [hazel.inference.score :as score]
+            [hazel.inference.particle :as particle]
+            [hazel.inference.observation :as observation]
+            [hazel.model.kinetics :as kinetics]
             [hazel.simulation.direct :as direct]))
 
 (deftest large-exact-algebra-regression
@@ -61,3 +64,17 @@
 (deftest empty-score-still-validates-probability-input-regression
   (let [q (generator/build (projection/enumerate f/switch))]
     (is (thrown? clojure.lang.ExceptionInfo (score/forward f/switch q [2 0 0] [:activate] [] [] {})))))
+
+(deftest empty-observations-still-require-compiled-model-regression
+  (is (thrown? clojure.lang.ExceptionInfo (particle/filter {} [] [] 10 42)))
+  (is (thrown? clojure.lang.ExceptionInfo (observation/compile-sensors {} [])))
+  (let [q (generator/build (projection/enumerate f/switch))
+        uncompiled (dissoc f/switch :hazel.model/compiled)]
+    (is (thrown? clojure.lang.ExceptionInfo
+                 (score/forward uncompiled q (generator/initial-vector q [1 0]) [] [] [] {})))))
+
+(deftest propensity-and-generator-state-dimensions-regression
+  (is (thrown? clojure.lang.ExceptionInfo (kinetics/factor (first (:reactions f/switch)) [1])))
+  (let [q (generator/build (projection/enumerate f/switch))]
+    (is (thrown? clojure.lang.ExceptionInfo (generator/validate (assoc q :states []))))
+    (is (thrown? clojure.lang.ExceptionInfo (generator/validate (assoc q :states [[1 0] [1 0]]))))))
