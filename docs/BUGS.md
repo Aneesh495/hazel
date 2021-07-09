@@ -110,3 +110,18 @@ constant equal to zero, because that reaction created no edge. Its separate
 checker correctly rejected the same source. Validate every source reaction
 constant before producing a certificate, including disabled channels. The
 disabled-floating-rate regression was committed while failing, then retained.
+
+## HZ-014: empty observation paths skipped model validation
+
+Particle filtering, empty sensor compilation, and empty score observations could
+return before checking the compiled-model marker. Invalid maps were therefore
+accepted on these zero-work paths. Validate the model at each public entry point,
+before iterating observations. The regression covers all three paths.
+
+## HZ-015: state dimensions were incomplete at low-level boundaries
+
+A short state vector silently truncated a reaction-factor map operation, while
+generator validation accepted missing or duplicate population metadata. Check
+factor dimensions before combinatorics and validate the generator state count,
+uniqueness, vector shape, and common dimension. The regressions were first
+committed with six observed failures across HZ-014 and HZ-015.

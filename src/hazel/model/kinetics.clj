@@ -5,6 +5,7 @@
             [hazel.math.probability :as probability]))
 
 (defn factor [reaction state]
+  (n/same-size! state (:consume reaction))
   (reduce *' 1N (map probability/choose state (:consume reaction))))
 
 (defn propensity [reaction state]

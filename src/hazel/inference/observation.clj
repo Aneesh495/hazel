@@ -5,6 +5,7 @@
             [hazel.math.probability :as p]))
 
 (defn compile-sensors [model sensors]
+  (net/compiled! model)
   (when-not (and (vector? sensors) (= (count sensors) (count (set (map :species sensors)))))
     (n/fail "Sensors must be a vector with distinct species" {}))
   (mapv (fn [sensor]

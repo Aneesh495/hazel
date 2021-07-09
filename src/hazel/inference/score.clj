@@ -1,12 +1,14 @@
 (ns hazel.inference.score
   "Likelihood gradients include the derivative of every filtering normalizer."
   (:require [hazel.ctmc.sensitivity :as sensitivity]
+            [hazel.model.network :as net]
             [hazel.inference.observation :as observation]
             [hazel.math.numeric :as n]
             [hazel.math.linear :as l]))
 
 (defn forward
   [model q initial parameters sensors observations options]
+  (net/compiled! model)
   (observation/validate-observations sensors observations)
   (n/probability-vector! initial)
   (n/same-size! (:rows q) initial)

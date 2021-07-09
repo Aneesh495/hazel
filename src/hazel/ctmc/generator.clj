@@ -6,11 +6,15 @@
             [hazel.ctmc.projection :as projection]))
 
 (defn validate [generator]
-  (let [{:keys [size rows exits sink]} generator]
+  (let [{:keys [size rows exits sink states]} generator]
     (n/natural! :size size)
     (when-not (and (pos? size) (= size (count rows) (count exits))
                    (= sink (dec size)))
       (n/fail "Invalid generator dimensions or escape index" {}))
+    (when-not (and (vector? states) (= (count states) sink)
+                   (= (count states) (count (set states))) (every? vector? states)
+                   (or (empty? states) (apply = (map count states))))
+      (n/fail "Invalid generator population-state dimensions or duplicate states" {}))
     (doseq [[i row] (map-indexed vector rows)]
       (when-not (= (count row) (count (set (map first row))))
         (n/fail "Generator row contains duplicate destinations" {:row i}))

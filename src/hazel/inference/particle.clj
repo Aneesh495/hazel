@@ -4,6 +4,7 @@
   cloned ancestors from sharing identical future random numbers."
   (:refer-clojure :exclude [filter])
   (:require [hazel.inference.observation :as observation]
+            [hazel.model.network :as net]
             [hazel.simulation.direct :as direct]
             [hazel.simulation.random :as random]
             [hazel.math.numeric :as n]
@@ -26,6 +27,7 @@
   ([model sensors observations count seed {:keys [resample-threshold max-events]
                                           :or {resample-threshold 0.5 max-events 1000000}}]
    (n/natural! :particle-count count) (random/seed seed)
+   (net/compiled! model)
    (when-not (<= 2 count 100000) (n/fail "Particle count must be in 2..100000" {}))
    (when-not (<= 0 (n/finite! :resample-threshold resample-threshold) 1)
      (n/fail "Resampling threshold must be in [0,1]" {}))
